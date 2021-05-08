@@ -1,3 +1,5 @@
 # Machine learning review 2021
-## New techniques in machine learning. A review
+
+## A review of new techniques in machine learning.
+
 Tensorflow, Keras, Pytorch, and etc.
