@@ -1,0 +1,205 @@
++*In[1]:*+
+[source, ipython3]
+----
+import tensorflow as tf
+import tensorflow.keras as keras
+import tensorflow.keras.datasets as datasets
+import tensorflow.keras.layers as layers
+import numpy as np
+----
+
+
++*In[2]:*+
+[source, ipython3]
+----
+#
+# Load the IMDB movie review dataset
+#
+data = datasets.imdb.load_data()
+----
+
+
++*Out[2]:*+
+----
+<__array_function__ internals>:5: VisibleDeprecationWarning: Creating an ndarray from ragged nested sequences (which is a list-or-tuple of lists-or-tuples-or ndarrays with different lengths or shapes) is deprecated. If you meant to do this, you must specify 'dtype=object' when creating the ndarray
+/opt/conda/lib/python3.8/site-packages/tensorflow/python/keras/datasets/imdb.py:159: VisibleDeprecationWarning: Creating an ndarray from ragged nested sequences (which is a list-or-tuple of lists-or-tuples-or ndarrays with different lengths or shapes) is deprecated. If you meant to do this, you must specify 'dtype=object' when creating the ndarray
+  x_train, y_train = np.array(xs[:idx]), np.array(labels[:idx])
+/opt/conda/lib/python3.8/site-packages/tensorflow/python/keras/datasets/imdb.py:160: VisibleDeprecationWarning: Creating an ndarray from ragged nested sequences (which is a list-or-tuple of lists-or-tuples-or ndarrays with different lengths or shapes) is deprecated. If you meant to do this, you must specify 'dtype=object' when creating the ndarray
+  x_test, y_test = np.array(xs[idx:]), np.array(labels[idx:])
+----
+
+
++*In[3]:*+
+[source, ipython3]
+----
+#
+# Similar to MNIST dataset, it's split between training and testing data
+#
+(x_train, y_train), (x_test, y_test) = data
+----
+
+
++*In[8]:*+
+[source, ipython3]
+----
+#
+# Load the word_index table
+#
+index = datasets.imdb.get_word_index()
+----
+
+
++*In[9]:*+
+[source, ipython3]
+----
+#
+# build the lookup table
+#
+id_to_word = dict((i+3, w) for (w,i) in index.items())
+id_to_word.update({
+    0: '<PAD>',
+    1: '<START>',
+    2: '<UNKNOWN>',
+    3: '<UNUSED>',
+})
+----
+
+
++*In[13]:*+
+[source, ipython3]
+----
+np.array(x_train[0])[:10]
+----
+
+
++*Out[13]:*+
+----array([   1,   14,   22,   16,   43,  530,  973, 1622, 1385,   65])----
+
+
++*In[16]:*+
+[source, ipython3]
+----
+" ".join([id_to_word[i] for i in x_train[0][:10]])
+----
+
+
++*Out[16]:*+
+----'<START> this film was just brilliant casting location scenery story'----
+
+
++*In[21]:*+
+[source, ipython3]
+----
+#
+# The vocabulary size is
+#
+len(index)
+----
+
+
++*Out[21]:*+
+----88584----
+
+
++*In[17]:*+
+[source, ipython3]
+----
+def decode(ordinals):
+    return " ".join(id_to_word.get(i) for i in ordinals)
+----
+
+
++*In[20]:*+
+[source, ipython3]
+----
+decode(x_train[2]), y_train[2]
+----
+
+
++*Out[20]:*+
+----("<START> this has to be one of the worst films of the 1990s when my friends i were watching this film being the target audience it was aimed at we just sat watched the first half an hour with our jaws touching the floor at how bad it really was the rest of the time everyone else in the theatre just started talking to each other leaving or generally crying into their popcorn that they actually paid money they had earnt working to watch this feeble excuse for a film it must have looked like a great idea on paper but on film it looks like no one in the film has a clue what is going on crap acting crap costumes i can't get across how embarrasing this is to watch save yourself an hour a bit of your life",
+ 0)----
+
+== A reduced dataset
+
+
++*In[22]:*+
+[source, ipython3]
+----
+data = datasets.imdb.load_data(
+    num_words=1000,
+    skip_top=5
+)
+
+(x_train, y_train), (x_test, y_test) = data
+----
+
+
++*Out[22]:*+
+----
+<__array_function__ internals>:5: VisibleDeprecationWarning: Creating an ndarray from ragged nested sequences (which is a list-or-tuple of lists-or-tuples-or ndarrays with different lengths or shapes) is deprecated. If you meant to do this, you must specify 'dtype=object' when creating the ndarray
+/opt/conda/lib/python3.8/site-packages/tensorflow/python/keras/datasets/imdb.py:159: VisibleDeprecationWarning: Creating an ndarray from ragged nested sequences (which is a list-or-tuple of lists-or-tuples-or ndarrays with different lengths or shapes) is deprecated. If you meant to do this, you must specify 'dtype=object' when creating the ndarray
+  x_train, y_train = np.array(xs[:idx]), np.array(labels[:idx])
+/opt/conda/lib/python3.8/site-packages/tensorflow/python/keras/datasets/imdb.py:160: VisibleDeprecationWarning: Creating an ndarray from ragged nested sequences (which is a list-or-tuple of lists-or-tuples-or ndarrays with different lengths or shapes) is deprecated. If you meant to do this, you must specify 'dtype=object' when creating the ndarray
+  x_test, y_test = np.array(xs[idx:]), np.array(labels[idx:])
+----
+
+
++*In[23]:*+
+[source, ipython3]
+----
+decode(x_train[0])
+----
+
+
++*Out[23]:*+
+----"<UNKNOWN> this film was just brilliant casting <UNKNOWN> <UNKNOWN> story direction <UNKNOWN> really <UNKNOWN> <UNKNOWN> part they played and you could just imagine being there robert <UNKNOWN> is an amazing actor and now <UNKNOWN> same being director <UNKNOWN> father came from <UNKNOWN> same <UNKNOWN> <UNKNOWN> as myself so i loved <UNKNOWN> fact there was a real <UNKNOWN> with this film <UNKNOWN> <UNKNOWN> <UNKNOWN> throughout <UNKNOWN> film were great it was just brilliant so much that i <UNKNOWN> <UNKNOWN> film as soon as it was released for <UNKNOWN> and would recommend it to everyone to watch and <UNKNOWN> <UNKNOWN> <UNKNOWN> was amazing really <UNKNOWN> at <UNKNOWN> end it was so sad and you know what they say if you <UNKNOWN> at a film it must have been good and this definitely was also <UNKNOWN> to <UNKNOWN> two little <UNKNOWN> that played <UNKNOWN> <UNKNOWN> of <UNKNOWN> and paul they were just brilliant children are often left out of <UNKNOWN> <UNKNOWN> <UNKNOWN> i think because <UNKNOWN> stars that play them all <UNKNOWN> up are such a big <UNKNOWN> for <UNKNOWN> whole film but these children are amazing and should be <UNKNOWN> for what they have done don't you think <UNKNOWN> whole story was so <UNKNOWN> because it was true and was <UNKNOWN> life after all that was <UNKNOWN> with us all"----
+
+
++*In[24]:*+
+[source, ipython3]
+----
+decode(x_train[1])
+----
+
+
++*Out[24]:*+
+----"<UNKNOWN> big <UNKNOWN> big <UNKNOWN> bad music and a <UNKNOWN> <UNKNOWN> <UNKNOWN> these are <UNKNOWN> words to best <UNKNOWN> this terrible movie i love cheesy horror movies and i've seen <UNKNOWN> but this had got to be on of <UNKNOWN> worst ever made <UNKNOWN> plot is <UNKNOWN> <UNKNOWN> and ridiculous <UNKNOWN> acting is an <UNKNOWN> <UNKNOWN> script is completely <UNKNOWN> <UNKNOWN> best is <UNKNOWN> end <UNKNOWN> with <UNKNOWN> <UNKNOWN> and how he worked out who <UNKNOWN> killer is it's just so <UNKNOWN> <UNKNOWN> written <UNKNOWN> <UNKNOWN> are <UNKNOWN> and funny in <UNKNOWN> <UNKNOWN> <UNKNOWN> <UNKNOWN> is big lots of <UNKNOWN> <UNKNOWN> men <UNKNOWN> those cut <UNKNOWN> <UNKNOWN> that show off their <UNKNOWN> <UNKNOWN> that men actually <UNKNOWN> them and <UNKNOWN> music is just <UNKNOWN> <UNKNOWN> that plays over and over again in almost every scene there is <UNKNOWN> music <UNKNOWN> and <UNKNOWN> taking away <UNKNOWN> and <UNKNOWN> <UNKNOWN> still doesn't close for <UNKNOWN> all <UNKNOWN> <UNKNOWN> this is a truly bad film whose only <UNKNOWN> is to look back on <UNKNOWN> <UNKNOWN> that was <UNKNOWN> <UNKNOWN> and have a good old laugh at how bad everything was back then"----
+
+
++*In[25]:*+
+[source, ipython3]
+----
+#
+# To encode text to ordinals (at the application level), we compute the reverse lookup table
+#
+word_to_id = {
+    w:i for (i,w) in id_to_word.items()
+}
+----
+
+
++*In[26]:*+
+[source, ipython3]
+----
+def encode(text):
+    return [word_to_id.get(w, 2) for w in text.split()]
+----
+
+
++*In[27]:*+
+[source, ipython3]
+----
+encode("this film was just brilliant casting")
+----
+
+
++*Out[27]:*+
+----[14, 22, 16, 43, 530, 973]----
+
+
++*In[ ]:*+
+[source, ipython3]
+----
+
+----
